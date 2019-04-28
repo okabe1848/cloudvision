@@ -1,14 +1,25 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
-  </ion-toolbar>
+    <ion-toolbar>
+        <button ion-fab (click)="openCam()">
+            <ion-icon name="camera"></ion-icon>
+            <ion-label>Take photo</ion-label>
+        </button>
+    </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="ion-padding">
-    The world is your oyster.
-    <p>If you get lost, the <a target="_blank" rel="noopener" href="https://ionicframework.com/docs/">docs</a> will be your guide.</p>
-  </div>
+<ion-content padding *ngIf="imageSrc">
+    <ion-item>
+        <img [src]="imageSrc" class="img-taken"/>
+    </ion-item>
+
+    <ion-list *ngIf="(result$ | async) as result; else loading">
+        <ion-item *ngFor="let item of result.responses[0].labelAnnotations">
+            {{item.description}} (score: {{item.score}})
+        </ion-item>
+    </ion-list>
+
+    <ng-template #loading>
+        <ion-label>Analysing photo...</ion-label>
+    </ng-template>
+
 </ion-content>
