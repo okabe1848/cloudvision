@@ -1,25 +1,61 @@
+<ion-menu>
+    <ion-header>
+        <ion-toolbar>
+            <ion-title>Menu</ion-title>
+        </ion-toolbar>
+    </ion-header>
+    <ion-content>
+        <ion-list>
+            <ion-menu-toggle>
+                <ion-item>
+                    <ion-label (click)="signOut()">
+                        Sign Out
+                    </ion-label>
+                </ion-item>
+                <ion-item>
+                    <ion-label (click)="openCam()">
+                        Take photo
+                    </ion-label>
+                </ion-item>
+            </ion-menu-toggle>
+        </ion-list>
+    </ion-content>
+</ion-menu>
 <ion-header>
     <ion-toolbar>
-        <button ion-fab (click)="openCam()">
-            <ion-icon name="camera"></ion-icon>
-            <ion-label>Take photo</ion-label>
-        </button>
+        <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+        </ion-buttons>
     </ion-toolbar>
 </ion-header>
 
-<ion-content padding *ngIf="imageSrc">
-    <ion-item>
-        <img [src]="imageSrc" class="img-taken"/>
-    </ion-item>
-
-    <ion-list *ngIf="(result$ | async) as result; else loading">
-        <ion-item *ngFor="let item of result.responses[0].labelAnnotations">
-            {{item.description}} (score: {{item.score}})
+<ion-content main padding>
+    <div *ngIf="imageSrc">
+        <ion-item>
+            <img [src]="imageSrc"/>
         </ion-item>
-    </ion-list>
 
-    <ng-template #loading>
-        <ion-label>Analysing photo...</ion-label>
-    </ng-template>
+        <ion-list *ngIf="(result$ | async) as result; else loading">
+            <ng-container *ngIf="result.responses.length > 0">
+                <ion-item *ngFor="let item of result.responses[0].labelAnnotations">
+                    {{item.description}} (score: {{item.score}})
+                </ion-item>
+            </ng-container>
+            <ion-item *ngIf="isResultEmpty(result)">
+                No result found.
+            </ion-item>
+        </ion-list>
 
+        <ng-template #loading>
+            <ion-item>
+                <ion-label>Analysing photo...</ion-label>
+            </ion-item>
+        </ng-template>
+    </div>
+
+    <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+        <ion-fab-button (click)="openCam()">
+            <ion-icon name="camera"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
 </ion-content>
