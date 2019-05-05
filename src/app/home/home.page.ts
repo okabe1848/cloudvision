@@ -20,25 +20,37 @@ export class HomePage implements OnInit {
 
     isDebug: boolean;
 
+    error: string;
+
     constructor(private camera: Camera, private vision: GoogleCloudVisionService, private navCtrl: NavController) {
     }
 
     ngOnInit() {
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-            } else {
-                this.navCtrl.navigateRoot('signin');
-            }
+        this.isDebug = environment.debug;
+        this.error = null;
+
+        const promise = new Promise((resolve, reject) => {
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
         });
 
-        this.isDebug = environment.debug;
-        if (!this.isDebug) {
-            this.openCam();
-        }
+        promise.then(() => {
+            if (!this.isDebug) {
+                this.openCam();
+            }
+        }).catch(() => {
+            this.navCtrl.navigateRoot('signin');
+        });
     }
 
     openCamMock() {
         this.result$ = null;
+        this.error = null;
         this.imageSrc = '../assets/shapes.svg';
 
         const mock = {
@@ -84,16 +96,18 @@ export class HomePage implements OnInit {
         };
 
         this.camera.getPicture(options).then((imageData) => {
+            this.error = null;
             this.imageSrc = 'data:image/jpeg;base64,' + imageData;
             this.result$ = this.vision.getLabels(imageData).pipe(
                 catchError(this.handleError<any>([]))
             );
         }, (err) => {
             console.log(`camera.getPicture.error=${JSON.stringify(err)}`);
+            this.error = JSON.stringify(err);
         });
     }
 
-    handleError<T>(result?: T) {
+    handleError<T>(result ?: T) {
         return (error: any): Observable<T> => {
             console.error(error);
             return of(result as T);
